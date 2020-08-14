@@ -1,0 +1,11 @@
+entity Phones {
+	number String required minlength(8),
+    ddd String required minlength(2)
+}
+
+relationship ManyToOne {
+	Phones{user} to User
+}
+
+paginate Phones with infinite-scroll
+filter Phones

@@ -48,6 +48,7 @@ public class CacheConfiguration {
             createCache(cm, br.com.deivdy.spring.domain.User.class.getName());
             createCache(cm, br.com.deivdy.spring.domain.Authority.class.getName());
             createCache(cm, br.com.deivdy.spring.domain.User.class.getName() + ".authorities");
+            createCache(cm, br.com.deivdy.spring.domain.Phones.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

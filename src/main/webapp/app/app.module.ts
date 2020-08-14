@@ -7,6 +7,7 @@ import { SpringCoreModule } from 'app/core/core.module';
 import { SpringAppRoutingModule } from './app-routing.module';
 import { SpringHomeModule } from './home/home.module';
 import { SpringEntityModule } from './entities/entity.module';
+import { SpringAppSwaggerModule } from './swagger/swagger.module';
 // jhipster-needle-angular-add-module-import JHipster will add new module here
 import { MainComponent } from './layouts/main/main.component';
 import { NavbarComponent } from './layouts/navbar/navbar.component';
@@ -20,6 +21,7 @@ import { ErrorComponent } from './layouts/error/error.component';
     SpringSharedModule,
     SpringCoreModule,
     SpringHomeModule,
+    SpringAppSwaggerModule,
     // jhipster-needle-angular-add-module JHipster will add new module here
     SpringEntityModule,
     SpringAppRoutingModule,

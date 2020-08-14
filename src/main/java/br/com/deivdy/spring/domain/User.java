@@ -2,11 +2,12 @@ package br.com.deivdy.spring.domain;
 
 import br.com.deivdy.spring.config.Constants;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -39,7 +40,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(length = 50, unique = true, nullable = false)
     private String login;
 
-    @JsonIgnore
     @NotNull
     @Size(min = 60, max = 60)
     @Column(name = "password_hash", length = 60, nullable = false)
@@ -72,18 +72,15 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @Size(max = 20)
     @Column(name = "activation_key", length = 20)
-    @JsonIgnore
     private String activationKey;
 
     @Size(max = 20)
     @Column(name = "reset_key", length = 20)
-    @JsonIgnore
     private String resetKey;
 
     @Column(name = "reset_date")
     private Instant resetDate = null;
 
-    @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "jhi_user_authority",
@@ -93,6 +90,10 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
 
+    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties(value = "user", allowSetters = true)
+    private Set<Phones> phones = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -197,6 +198,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
+    }
+
+    public Set<Phones> getPhones() {
+        return phones;
+    }
+
+    public void setPhones(Set<Phones> phones) {
+        this.phones = phones;
     }
 
     @Override

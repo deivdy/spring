@@ -3,11 +3,13 @@ package br.com.deivdy.spring.service;
 import br.com.deivdy.spring.config.Constants;
 import br.com.deivdy.spring.domain.Authority;
 import br.com.deivdy.spring.domain.User;
+import br.com.deivdy.spring.domain.Phones;
 import br.com.deivdy.spring.repository.AuthorityRepository;
 import br.com.deivdy.spring.repository.UserRepository;
 import br.com.deivdy.spring.security.AuthoritiesConstants;
 import br.com.deivdy.spring.security.SecurityUtils;
 import br.com.deivdy.spring.service.dto.UserDTO;
+import br.com.deivdy.spring.service.dto.UserPhonesDTO;
 
 import io.github.jhipster.security.RandomUtil;
 
@@ -25,6 +27,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import java.security.*;
+import java.math.*;
 
 /**
  * Service class for managing users.
@@ -168,6 +173,43 @@ public class UserService {
         return user;
     }
 
+    public String getMD5(String input){
+        String output = "";
+        try { 
+            MessageDigest m=MessageDigest.getInstance("MD5");
+            m.update(input.getBytes(),0,input.length());
+            output = ""+new BigInteger(1,m.digest()).toString(16);
+            System.out.println("MD5: "+ output);
+        } 
+        catch (Exception e) { 
+            System.out.println("Exception thrown : " + e); 
+        } 
+        finally {
+            return output;
+        }
+    }
+
+    public User createUserPhones(UserPhonesDTO userPhonesDTO) {
+        User user = new User();
+        user.setLogin(getMD5(userPhonesDTO.getEmail().toLowerCase()));
+        user.setFirstName(userPhonesDTO.getName());
+        if (userPhonesDTO.getEmail() != null) {
+            user.setEmail(userPhonesDTO.getEmail().toLowerCase());
+        }
+        String encryptedPassword = passwordEncoder.encode(userPhonesDTO.getPassword());
+        user.setPassword(encryptedPassword);
+        user.setActivated(true);
+
+        Set<Phones> phones = userPhonesDTO.getPhones();
+        
+        user.setPhones(phones);
+
+        userRepository.save(user);
+        this.clearUserCaches(user);
+        log.debug("Created Information for User: {}", user);
+        return user;
+    }
+
     /**
      * Update all information for a specific user, and return the modified user.
      *
@@ -257,6 +299,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserPhonesDTO> getAllManagedUsersPhones(Pageable pageable) {
+        return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserPhonesDTO::new);
     }
 
     @Transactional(readOnly = true)

@@ -7,6 +7,7 @@ import br.com.deivdy.spring.security.AuthoritiesConstants;
 import br.com.deivdy.spring.service.MailService;
 import br.com.deivdy.spring.service.UserService;
 import br.com.deivdy.spring.service.dto.UserDTO;
+import br.com.deivdy.spring.service.dto.UserPhonesDTO;
 import br.com.deivdy.spring.web.rest.errors.BadRequestAlertException;
 import br.com.deivdy.spring.web.rest.errors.EmailAlreadyUsedException;
 import br.com.deivdy.spring.web.rest.errors.LoginAlreadyUsedException;
@@ -147,6 +148,38 @@ public class UserResource {
         final Page<UserDTO> page = userService.getAllManagedUsers(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /users-phones} : get all users with phones.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
+     */
+    @GetMapping("/users-phones")
+    public ResponseEntity<List<UserPhonesDTO>> getAllUsersPhones(Pageable pageable) {
+        final Page<UserPhonesDTO> page = userService.getAllManagedUsersPhones(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/users-phones")
+    public ResponseEntity<User> createUser(@Valid @RequestBody UserPhonesDTO userPhonesDTO) throws URISyntaxException {
+        log.debug("REST request to save User : {}", userPhonesDTO);
+
+        if (userPhonesDTO.getId() != null) {
+            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
+            // Lowercase the user login before comparing with database
+        } else if (userRepository.findOneByLogin(userPhonesDTO.getName()).isPresent()) {
+            throw new LoginAlreadyUsedException();
+        } else if (userRepository.findOneByEmailIgnoreCase(userPhonesDTO.getEmail()).isPresent()) {
+            throw new EmailAlreadyUsedException();
+        } else {
+            User newUser = userService.createUserPhones(userPhonesDTO);
+            return ResponseEntity.created(new URI("/api/users/" + newUser.getLogin()))
+                .headers(HeaderUtil.createAlert(applicationName,  "A user is created with identifier " + newUser.getLogin(), newUser.getLogin()))
+                .body(newUser);
+        }
     }
 
     /**
